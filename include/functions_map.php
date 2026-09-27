@@ -241,8 +241,8 @@ function osm_get_items($page)
     {
         // MySQL did all the job
         //print_r($array);
-        $js_data[] = array((double)$array['latitude'],
-                   (double)$array['longitude'],
+        $js_data[] = array((float)$array['latitude'],
+                   (float)$array['longitude'],
                    $array['name'],
                    get_absolute_root_url() ."i.php?".$array['pathurl'],
                    get_absolute_root_url() ."picture.php?/".$array['imgurl'],
@@ -309,16 +309,23 @@ function osm_get_js($conf, $local_conf, $js_data)
     $center_lat = isset($center_arr) ? $center_arr[0] : 0;
     $center_lng = isset($center_arr) ? $center_arr[1] : 0;
 
-    /* If we have zoom and center coordonate, set it otherwise fallback default */
-    $zoom = isset($_GET['zoom'])
-        ? $_GET['zoom']
-        : (
-            isset($local_conf['zoom'])
-                ? $local_conf['zoom']
-                : 2
-            );
-    $center_lat = isset($_GET['center_lat']) ? $_GET['center_lat'] : $center_lat;
-    $center_lng = isset($_GET['center_lng']) ? $_GET['center_lng'] : $center_lng;
+    $zoom = $_GET['zoom'] ?? ($local_conf['zoom']?? 2);
+    $center_lat = $_GET['center_lat'] ?? $center_lat;
+    $center_lng = $_GET['center_lng'] ?? $center_lng;
+
+    /* If we have zoom and center coordinate, set it otherwise fallback default */
+    if (isset($_GET['zoom'])) {
+        check_input_parameter('zoom', $_GET, false, '/^1?\d$/',true);
+        $zoom = $_GET['zoom'];
+    }
+    if (isset($_GET['center_lat'])) {
+        check_input_parameter('center_lat', $_GET, false, '/^-?\d+(\.\d+)?$/',true);
+        $center_lat = $_GET['center_lat'];
+    }
+    if (isset($_GET['center_lng'])) {
+        check_input_parameter('center_lng', $_GET, false, '/^-?\d+(\.\d+)?$/',true);
+        $center_lng = isset($_GET['center_lng']) ? $_GET['center_lng'] : $center_lng;
+    }
 
     $autocenter = isset($local_conf['autocenter'])
         ? $local_conf['autocenter']
